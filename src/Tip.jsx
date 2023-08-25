@@ -1,6 +1,7 @@
 function Tip({ tip }) {
   const { x, y, hidden, name, cost } = tip
-  const classes =`transition-all duration-200 opacity-${hidden ? 0 : 100}`
+  // const classes =`transition-all duration-200 opacity-${hidden ? 0 : 100}`
+  const classes =`transition-all duration-200 ${hidden ? 'hidden' : ''}`
 
   return (
     <g
