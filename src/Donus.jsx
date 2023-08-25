@@ -42,8 +42,7 @@ function reducer(state, action) {
 
 function Donus() {
   const [{ name, cost, donus }, dispatch] = useReducer(reducer, initialState);
-  const { addExpense, isAdding } = useAddExpense();
-  const { expenses, isLoading } = useExpenses();
+  const { addExpense } = useAddExpense();
 
   useEffect(() => {
     onSnapshot(collection(db, "expenses"), (snapshot) => {
@@ -76,7 +75,6 @@ function Donus() {
     e.preventDefault();
     dispatch({ type: "submit", payload: addExpense });
   }
-  function handleDelete(e) {}
 
   return (
     <div className="h-screen grid grid-rows-[auto_1fr_auto]">
@@ -88,8 +86,8 @@ function Donus() {
           Monthly money tracker for ninjas...
         </p>
       </header>
-      <main className="my-10 mx-auto flex text-center justify-center gap-5">
-        <form className="flex flex-col gap-5 p-8 max-w-2xl">
+      <main className="md:my-10 mx-auto flex flex-col md:flex-row text-center justify-center gap-0 lg::gap-4">
+        <form className="flex flex-col gap-5 p-4 md:p-8 max-w-2xl">
           <span className="text-2xl uppercase font-semibold my-4 text-indigo-700">
             Add item :
           </span>
