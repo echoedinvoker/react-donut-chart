@@ -5,23 +5,23 @@ import PieChart from "./PieChart";
 import { collection, onSnapshot } from "firebase/firestore";
 import db from "./firestore";
 
-const initialState = { name: "", cost: "", donus: [] };
+const initialState = { name: "", cost: "", donus: [], error: "" };
 
 function reducer(state, action) {
   switch (action.type) {
     case "added":
       return { ...state, donus: [...state.donus, action.payload] };
     case "name":
-      return { ...state, name: action.payload };
+      return { ...state, name: action.payload, error: "" };
     case "cost":
-      return { ...state, cost: action.payload };
+      return { ...state, cost: action.payload, error: "" };
     case "submit":
       const cost = parseInt(state.cost);
       if (state.name.trim() && cost > 0) {
-        action.payload({ name: state.name, cost: Number(state.cost) });
+        action.payload({ name: state.name, cost });
         return { ...state, name: "", cost: "" };
       } else {
-        return state;
+        return { ...state, error: "Please enter the correct information."};
       }
     case "modified":
       return {
@@ -41,7 +41,7 @@ function reducer(state, action) {
 }
 
 function Donus() {
-  const [{ name, cost, donus }, dispatch] = useReducer(reducer, initialState);
+  const [{ name, cost, donus, error }, dispatch] = useReducer(reducer, initialState);
   const { addExpense } = useAddExpense();
 
   useEffect(() => {
@@ -119,11 +119,14 @@ function Donus() {
             <button
               className="mt-4 bg-indigo-700 hover:bg-indigo-900
               tracking-wide transition-colors duration-300 text-indigo-200 
-              rounded-full px-4 py-3 uppercase font-bold"
+              rounded-full px-4 py-3 uppercase font-bold outline-none focus:ring focus:ring-indigo-300"
               onClick={handleSubmit}
             >
               Add Item
             </button>
+          </div>
+          <div>
+            <p className="text-red-800 italic font-thin">{error}</p>
           </div>
         </form>
         <div className="p-8 max-w-2xl">
