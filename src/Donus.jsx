@@ -1,9 +1,10 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useAddExpense } from "./useAddExpense";
 import { useExpenses } from "./useExpenses";
 import PieChart from "./PieChart";
 import { collection, onSnapshot } from "firebase/firestore";
 import db from "./firestore";
+import BubbleChart from "./BubbleChart";
 
 const initialState = { name: "", cost: "", donus: [], error: "" };
 
@@ -21,7 +22,7 @@ function reducer(state, action) {
         action.payload({ name: state.name, cost });
         return { ...state, name: "", cost: "" };
       } else {
-        return { ...state, error: "Please enter the correct information."};
+        return { ...state, error: "Please enter the correct information." };
       }
     case "modified":
       return {
@@ -41,6 +42,7 @@ function reducer(state, action) {
 }
 
 function Donus() {
+  const [ chart, setChart ] = useState('bubble')
   const [{ name, cost, donus, error }, dispatch] = useReducer(reducer, initialState);
   const { addExpense } = useAddExpense();
 
@@ -74,6 +76,14 @@ function Donus() {
   function handleSubmit(e) {
     e.preventDefault();
     dispatch({ type: "submit", payload: addExpense });
+  }
+  function handleClickToBubble(e) {
+    e.preventDefault()
+    setChart('bubble')
+  }
+  function handleClickToDonus(e) {
+    e.preventDefault()
+    setChart('donus')
   }
 
   return (
@@ -128,9 +138,24 @@ function Donus() {
           <div>
             <p className="text-red-800 italic font-thin">{error}</p>
           </div>
+          <div className="flex gap-0 justify-center">
+            <button 
+              className={`py-1 pl-5 pr-2 rounded-l-full ${chart === 'donus' ? 'bg-indigo-600 text-indigo-100' : 'border border-indigo-600 text-indigo-600'}`}
+              onClick={handleClickToDonus}
+            >
+              Donus
+            </button>
+            <button 
+              className={`py-1 pr-5 pl-2 rounded-r-full ${chart === 'bubble' ? 'bg-indigo-600 text-indigo-100' : 'border border-indigo-600 text-indigo-600'}`}
+              onClick={handleClickToBubble}
+            >
+              Bubble
+            </button>
+          </div>
         </form>
         <div className="p-8 max-w-2xl">
-          <PieChart donus={donus} />
+          { chart === 'bubble' && <BubbleChart donus={donus} /> }
+          { chart === 'donus' && <PieChart donus={donus} /> }
         </div>
       </main>
     </div>

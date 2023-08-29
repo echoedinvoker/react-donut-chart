@@ -5,8 +5,8 @@ export function useAddExpense() {
   const { mutate: addExpense, isLoading: isAdding } = useMutation({
     mutationFn: addExpenseApi,
     onSuccess: (docRef) => console.log(docRef.id),
-    onError: () => console.log('error')
-  })
+    onError: () => console.log("error"),
+  });
 
-  return { addExpense, isAdding }
+  return { addExpense, isAdding };
 }
