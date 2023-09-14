@@ -22,7 +22,9 @@ function Pie({ setLegend, setTip, dims, donus, setSelected }) {
 
     setLegend(legendData)
 
+
     const paths = select('.pieChart').selectAll('path').data(pi(donus))
+
     paths.exit()
       .transition().duration(750)
         .attrTween('d', arcTweenExit)

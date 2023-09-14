@@ -1,165 +1,69 @@
-import { hierarchy, pack, scaleOrdinal, schemeSet3, select } from "d3";
+import { scaleOrdinal, schemeSet3, select } from "d3";
+import { useEffect, useState } from "react";
+import { generateBubbleCoordinates } from "./generateBubble";
 import { useDeleteExpense } from "./useDeleteExpense";
-import { useEffect } from "react";
 
-const dims = { height: 420, width: 420, radius: 150 };
+const dims = { height: 620, width: 420 };
 
-const p = pack().size([dims.width, dims.height]).padding(10);
 const colour = scaleOrdinal(schemeSet3);
 
-function Bubble({ donus }) {
-  const { deleteExpense } = useDeleteExpense();
 
+function Bubble({ donus }) {
+  const [last, setLast] = useState(null)
+
+  const { deleteExpense } = useDeleteExpense();
+  
   useEffect(() => {
     colour.domain(donus.map((d) => d.name));
-    const data = p(hierarchy({ children: donus }).sum((d) => d.cost))
-      .descendants()
-      .filter((d) => d.parent);
+
+    // const { outputData: dataoccupied } = generateBubbleCoordinates(donus, dims.width, dims.height, 5, 3000, last);
+    // setLast(occupied)
+    
+    console.log('srouce', donus)
+    const data = generateBubbleCoordinates(donus, dims.width, dims.height, 8)
+    console.log(data)
 
     const circles = select(".bubbleChart").selectAll("circle").data(data);
+    console.log('circles', circles)
 
     circles.exit().transition().duration(750).attr("r", 0).remove();
 
     circles
       .transition()
       .duration(750)
-      .attr("r", (d) => (d.r ? d.r : 0))
-      .attr("transform", (d) => `translate(${d.x},${d.y})`);
-
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("r", (d) => d.radius); 
+    
     circles
       .enter()
       .append("circle")
       .each(function(d) {
-        this._current = d;
+        this.dataset.id = d.id;
       })
-      .attr("transform", (d) => `translate(${d.x},${d.y})`)
+      .attr("cx", (d) => d.x)
+      .attr("cy", (d) => d.y)
+      .attr("fill", (d) => colour(d.name))
       .attr("stroke", "#fff")
       .attr("stroke-width", 3)
-      .attr("fill", (d) => colour(d.data.name))
       .attr(
         "class",
         "hover:brightness-150 hover:stroke-stone-600 hover:stroke-[5px]",
       )
-      .on("click", handleClick)
+      .on("click", function() {
+        handleClick(this.dataset.id)
+      })
       .attr("r", 0)
       .transition()
       .duration(750)
-      .attr("r", (d) => (d.r ? d.r : 0));
+      .attr("r", (d) => d.radius); 
 
-    const texts = select(".bubbleChart").selectAll("text").data(data);
 
-    texts.exit().transition().duration(1000).attr("opacity", 0).remove();
-
-    texts
-      .each(function(d) {
-        const el = select(this);
-        el.selectAll("tspan").remove();
-        const lines = [d.data.name, d.data.cost];
-        let dy = 0;
-
-        lines.forEach((line) => {
-          el.append("tspan")
-            .attr("font-size", (d) => 10 + d.value * 0.02)
-            .attr("x", 0)
-            .attr("dy", `${dy}em`)
-            .text(line);
-          dy += 1;
-        });
-      })
-      .transition()
-      .duration(750)
-      .attr("transform", (d) => `translate(${d.x},${d.y})`);
-
-    texts
-      .enter()
-      .append("text")
-      .attr("transform", (d) => `translate(${d.x},${d.y})`)
-      .attr("text-anchor", "middle")
-      .attr("class", "uppercase fill-stone-700 font-semibold")
-      .attr("pointer-events", "none")
-      .each(function(d) {
-        const el = select(this);
-        const lines = [d.data.name, d.data.cost];
-        let dy = 0;
-
-        lines.forEach((line) => {
-          el.append("tspan")
-            .attr("font-size", (d) => 10 + d.value * 0.02)
-            .attr("x", 0)
-            .attr("dy", `${dy}em`)
-            .text(line);
-          dy += 1;
-        });
-      })
-      .attr("opacity", 0)
-      .transition()
-      .duration(1000)
-      .attr("opacity", 1);
   }, [donus]);
 
-  function handleClick(_, d) {
-    deleteExpense(d.data.id);
+  function handleClick(id) {
+    deleteExpense(id);
   }
-
-  // function handleMouseOver(e, d) {
-  //   setTip((tip) => {
-  //     return {
-  //       ...tip,
-  //       x: e.offsetX,
-  //       y: e.offsetY > 75 ? e.offsetY : 75,
-  //       hidden: false,
-  //       name: d.data.name,
-  //       cost: d.data.cost
-  //     }
-  //   })
-  //   select(this)
-  //     .transition('changeSliceFill').duration(750)
-  //       .attr('fill', '#fff')
-
-  //   setSelected(d.data.name)
-  // }
-  // function handleMouseLeave(_, d) {
-  //   setTip((tip) => {
-  //     return {
-  //       ...tip,
-  //       hidden: true,
-  //     }
-  //   })
-  //   select(this)
-  //     .transition('changeSliceFill').duration(750)
-  //       .attr('fill', () => colour(d.data.name))
-
-  //   setSelected('')
-  // }
-
-  // function radiusTweenUpdate(d) {
-  //   const i = interpolate(this._current.r, d.r)
-
-  //   this._current = d
-
-  //   return function(t) {
-  //     return i(t)
-  //   }
-  // }
-
-  // function arcTweenEnter(d) {
-  //   const i = interpolate(d.endAngle, d.startAngle)
-  //
-  //   return function(t) {
-  //     d.startAngle = i(t)
-  //     return arcPath(d)
-  //   }
-  // }
-
-  // function arcTweenExit(d) {
-  //   const i = interpolate(d.startAngle, d.endAngle)
-  //
-  //   return function(t) {
-  //     d.startAngle = i(t)
-  //     return arcPath(d)
-  //   }
-  // }
-
   return (
     // <g className="bubbleChart" transform={`translate(${center.x}, ${center.y})`}>
     <g className="bubbleChart"></g>
@@ -167,3 +71,4 @@ function Bubble({ donus }) {
 }
 
 export default Bubble;
+
